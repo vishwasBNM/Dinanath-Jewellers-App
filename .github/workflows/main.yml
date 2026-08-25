@@ -1,0 +1,40 @@
+name: Build Dinanath Jewellers APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Check Flutter project
+        run: |
+          echo "Checking Flutter project..."
+          ls -la
+          test -f pubspec.yaml
+          test -f lib/main.dart
+
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dinanath-Jewellers-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
