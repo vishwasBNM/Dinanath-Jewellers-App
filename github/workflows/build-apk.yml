@@ -14,45 +14,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install unzip
-        run: sudo apt-get update && sudo apt-get install -y unzip
-
-      - name: Extract Flutter project
-        run: |
-          mkdir -p extractedo
-          unzip -q *.zip -d extracted
-
-          echo "Searching for pubspec.yaml..."
-
-          PUBSPEC=$(find extracted -name pubspec.yaml -type f | head -n 1)
-
-          if [ -z "$PUBSPEC" ]; then
-            echo "ERROR: Flutter project not found."
-            echo "Contents of extracted folder:"
-            find extracted -maxdepth 3 -type f | head -100
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$PUBSPEC")
-          echo "Flutter project found at: $PROJECT_DIR"
-
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
+
+      - name: Check Flutter project
+        run: |
+          echo "Checking Flutter project..."
+          ls -la
+          test -f pubspec.yaml
+          test -f lib/main.dart
 
       - name: Get Flutter packages
-        working-directory: ${{ env.PROJECT_DIR }}
         run: flutter pub get
 
       - name: Build APK
-        working-directory: ${{ env.PROJECT_DIR }}
         run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Dinanath-Jewellers-APK
-          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
